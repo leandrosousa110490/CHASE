@@ -154,6 +154,64 @@
             transform: scale(1.05);
         }
 
+        /* Speech bubble styles */
+        .speech-bubble {
+            position: absolute;
+            /* Position controls - adjust these values to move the bubble */
+            top: -70px;     /* Distance from top of image (negative = above image) */
+            left: 60px;     /* Distance from left edge of image */
+            /* Alternative positioning options:
+               right: 60px;  - Distance from right edge of image
+               bottom: -70px; - Distance from bottom of image (negative = below image) */
+            
+            background: white;
+            border: 3px solid #333;
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: #333;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 30px;
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 15px solid #333;
+        }
+
+        .speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 32px;
+            width: 0;
+            height: 0;
+            border-left: 13px solid transparent;
+            border-right: 13px solid transparent;
+            border-top: 13px solid white;
+        }
+
+        .speech-bubble.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .chase-image-container {
+            position: relative;
+            display: inline-block;
+        }
+
         /* Mobile responsiveness for chase image */
         @media (max-width: 768px) {
             .chase-image {
@@ -217,8 +275,15 @@
             
             <h1 class="counter-title display-2 mb-2">🎉 CHASE IS ON THE CASE 🎉</h1>
             <div class="mb-5 chase-image-container">
-                <img src="chase.png" alt="Chase" class="chase-image">
+                <img src="chase.png" alt="Chase" class="chase-image" id="chaseImage" style="cursor: pointer;" title="Click me to see Chase bark!">
+                <div class="speech-bubble" id="speechBubble">BARK BARK BARK!</div>
             </div>
+            
+            <!-- Audio element for dog bark sound -->
+            <audio id="dogBarkSound" preload="auto">
+                <source src="dog-bark.mp3" type="audio/mpeg">
+                Your browser does not support the audio element.
+            </audio>
             
             <div class="counter-card p-5 mx-auto" style="max-width: 900px;">
                 <div class="row g-3">
@@ -370,6 +435,35 @@
                     unit.style.transform = 'perspective(1000px) rotateX(5deg)';
                 }, 200);
             });
+        });
+        
+        // Add click event to Chase image for dog bark sound
+        document.getElementById('chaseImage').addEventListener('click', function() {
+            const dogBarkSound = document.getElementById('dogBarkSound');
+            const speechBubble = document.getElementById('speechBubble');
+            
+            // Reset the audio to the beginning in case it's already playing
+            dogBarkSound.currentTime = 0;
+            
+            // Play the dog bark sound
+            dogBarkSound.play().catch(function(error) {
+                console.log('Audio play failed:', error);
+                // If audio fails, still show the speech bubble
+            });
+            
+            // Show speech bubble
+            speechBubble.classList.add('show');
+            
+            // Add a visual feedback effect
+            this.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1.05)';
+            }, 150);
+            
+            // Hide speech bubble after 2 seconds
+            setTimeout(() => {
+                speechBubble.classList.remove('show');
+            }, 2000);
         });
     </script>
 </body>
