@@ -10,8 +10,8 @@ class FantasyDraftApp {
 
     initializeApp() {
         console.log('Initializing Fantasy Draft App with JSON storage...');
-        this.loadPlayersFromURL(); // Try URL first
-        this.loadPlayersFromJSON(); // Then localStorage
+        this.loadPlayersFromURL(); // Load from URL first
+        this.loadPlayersFromJSON(); // Then load from localStorage if URL empty
         this.setupEventListeners();
         console.log('Fantasy Draft App initialized successfully!');
     }
@@ -19,36 +19,48 @@ class FantasyDraftApp {
     loadPlayersFromURL() {
         try {
             const urlParams = new URLSearchParams(window.location.search);
-            const playersData = urlParams.get('players');
+            const encodedData = urlParams.get('data');
             
-            if (playersData) {
-                const decodedData = atob(playersData); // Decode base64
-                const players = JSON.parse(decodedData);
+            if (encodedData) {
+                const decodedData = atob(encodedData);
+                const sharedPlayers = JSON.parse(decodedData);
                 
-                if (Array.isArray(players) && players.length > 0) {
-                    this.players = players;
-                    // Update used numbers
+                if (Array.isArray(sharedPlayers) && sharedPlayers.length > 0) {
+                    this.players = sharedPlayers;
                     this.usedNumbers.clear();
                     this.players.forEach(player => this.usedNumbers.add(player.draftNumber));
                     
-                    // Save to localStorage as well
+                    // Save to localStorage as backup
                     this.savePlayersToJSON();
-                    console.log('Loaded players from URL:', this.players.length);
-                    return true;
+                    
+                    console.log('Loaded players from shared URL:', this.players.length);
+                    this.displayPlayersList(this.players);
+                    
+                    // Show notification that shared data was loaded
+                    setTimeout(() => {
+                        this.showError(`Loaded shared draft with ${this.players.length} players!`);
+                    }, 1000);
+                    
+                    return true; // Successfully loaded from URL
                 }
             }
         } catch (error) {
             console.error('Error loading players from URL:', error);
         }
-        return false;
+        return false; // No data loaded from URL
     }
 
     loadPlayersFromJSON() {
+        // Only load from localStorage if we don't already have players from URL
+        if (this.players.length > 0) {
+            return;
+        }
+        
         try {
             const stored = localStorage.getItem(this.storageKey);
             if (stored) {
                 this.players = JSON.parse(stored);
-                console.log('Loaded players from JSON:', this.players.length);
+                console.log('Loaded players from localStorage:', this.players.length);
             } else {
                 this.players = [];
                 console.log('No existing players found, starting fresh');
@@ -77,79 +89,43 @@ class FantasyDraftApp {
         }
     }
 
-    generateShareableURL() {
+    generateShareURL() {
         try {
-            const playersData = JSON.stringify(this.players);
-            const encodedData = btoa(playersData); // Base64 encode
+            const encodedData = btoa(JSON.stringify(this.players));
             const baseURL = window.location.origin + window.location.pathname;
-            const shareableURL = `${baseURL}?players=${encodedData}`;
-            
-            return shareableURL;
+            return `${baseURL}?data=${encodedData}`;
         } catch (error) {
-            console.error('Error generating shareable URL:', error);
+            console.error('Error generating share URL:', error);
             return null;
         }
     }
 
-    async copyShareableURL() {
-        const shareableURL = this.generateShareableURL();
-        
-        if (!shareableURL) {
-            this.showError('Failed to generate shareable URL');
+    shareResults() {
+        if (this.players.length === 0) {
+            this.showError('No players to share! Add some players first.');
             return;
         }
 
-        try {
-            await navigator.clipboard.writeText(shareableURL);
-            this.showSuccess('Shareable URL copied to clipboard!');
-        } catch (error) {
-            // Fallback for browsers that don't support clipboard API
-            this.showShareableURL(shareableURL);
+        const shareURL = this.generateShareURL();
+        if (shareURL) {
+            // Copy to clipboard if available
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareURL).then(() => {
+                    this.showError('Share URL copied to clipboard!');
+                }).catch(() => {
+                    this.showShareURL(shareURL);
+                });
+            } else {
+                this.showShareURL(shareURL);
+            }
+        } else {
+            this.showError('Failed to generate share URL');
         }
     }
 
-    showShareableURL(url) {
-        const shareModal = `
-            <div class="alert alert-info mt-3">
-                <h6>Share this URL:</h6>
-                <input type="text" class="form-control" value="${url}" readonly onclick="this.select()">
-                <small class="text-muted">Copy this URL and share it with others to sync the draft data!</small>
-            </div>
-        `;
-        
-        // Add to the page temporarily
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = shareModal;
-        document.body.appendChild(tempDiv);
-        
-        // Remove after 10 seconds
-        setTimeout(() => {
-            document.body.removeChild(tempDiv);
-        }, 10000);
-    }
-
-    showSuccess(message) {
-        const successElement = document.getElementById('successDisplay') || this.createSuccessElement();
-        const successMessage = successElement.querySelector('#successMessage');
-        if (successMessage) successMessage.textContent = message;
-        successElement.style.display = 'block';
-        
-        // Auto-hide success after 3 seconds
-        setTimeout(() => {
-            successElement.style.display = 'none';
-        }, 3000);
-    }
-
-    createSuccessElement() {
-        const successDiv = document.createElement('div');
-        successDiv.id = 'successDisplay';
-        successDiv.className = 'alert alert-success';
-        successDiv.style.display = 'none';
-        successDiv.innerHTML = `<strong>Success:</strong> <span id="successMessage"></span>`;
-        
-        const container = document.querySelector('.container');
-        container.insertBefore(successDiv, container.firstChild);
-        return successDiv;
+    showShareURL(url) {
+        const message = `Share this URL to let others see the draft results:\n\n${url}`;
+        alert(message);
     }
 
     generateRandomDraftNumber() {
@@ -234,7 +210,7 @@ class FantasyDraftApp {
     displayPlayersList(players) {
         const playersListElement = document.getElementById('playersList');
         const playerCountElement = document.getElementById('playerCount');
-        const shareButton = document.getElementById('shareButton');
+        const shareButton = document.getElementById('shareResults');
         
         // Update player count
         if (playerCountElement) {
@@ -242,21 +218,17 @@ class FantasyDraftApp {
             
             // Change color based on capacity
             if (players.length >= this.maxPlayers) {
-                playerCountElement.className = 'badge bg-danger me-2';
+                playerCountElement.className = 'badge bg-danger';
             } else if (players.length >= 7) {
-                playerCountElement.className = 'badge bg-warning me-2';
+                playerCountElement.className = 'badge bg-warning';
             } else {
-                playerCountElement.className = 'badge bg-primary me-2';
+                playerCountElement.className = 'badge bg-primary';
             }
         }
         
         // Show/hide share button based on player count
         if (shareButton) {
-            if (players.length > 0) {
-                shareButton.style.display = 'inline-block';
-            } else {
-                shareButton.style.display = 'none';
-            }
+            shareButton.style.display = players.length > 0 ? 'inline-block' : 'none';
         }
         
         if (!playersListElement) return;
@@ -366,10 +338,10 @@ class FantasyDraftApp {
             newPlayerButton.addEventListener('click', () => this.showInputForm());
         }
 
-        // Share button
-        const shareButton = document.getElementById('shareButton');
+        // Share results button
+        const shareButton = document.getElementById('shareResults');
         if (shareButton) {
-            shareButton.addEventListener('click', () => this.copyShareableURL());
+            shareButton.addEventListener('click', () => this.shareResults());
         }
 
         // Enter key support for name input
