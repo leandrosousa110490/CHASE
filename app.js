@@ -38,7 +38,7 @@ class FantasyDraftApp {
                     
                     // Show notification that shared data was loaded
                     setTimeout(() => {
-                        this.showError(`Loaded shared draft with ${this.players.length} players!`);
+                        this.showSuccess(`Loaded shared draft with ${this.players.length} players!`);
                     }, 1000);
                     
                     return true; // Successfully loaded from URL
@@ -111,7 +111,7 @@ class FantasyDraftApp {
             // Copy to clipboard if available
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(shareURL).then(() => {
-                    this.showError('Share URL copied to clipboard!');
+                    this.showSuccess('Share URL copied to clipboard!');
                 }).catch(() => {
                     this.showShareURL(shareURL);
                 });
@@ -121,6 +121,26 @@ class FantasyDraftApp {
         } else {
             this.showError('Failed to generate share URL');
         }
+    }
+
+    showSuccess(message) {
+        // Create temporary success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-success alert-dismissible fade show position-fixed';
+        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+        alertDiv.innerHTML = `
+            <strong>Success!</strong> ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.parentNode.removeChild(alertDiv);
+            }
+        }, 3000);
     }
 
     showShareURL(url) {
