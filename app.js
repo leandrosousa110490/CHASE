@@ -10,9 +10,37 @@ class FantasyDraftApp {
 
     initializeApp() {
         console.log('Initializing Fantasy Draft App with JSON storage...');
-        this.loadPlayersFromJSON();
+        this.loadPlayersFromURL(); // Try URL first
+        this.loadPlayersFromJSON(); // Then localStorage
         this.setupEventListeners();
         console.log('Fantasy Draft App initialized successfully!');
+    }
+
+    loadPlayersFromURL() {
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            const playersData = urlParams.get('players');
+            
+            if (playersData) {
+                const decodedData = atob(playersData); // Decode base64
+                const players = JSON.parse(decodedData);
+                
+                if (Array.isArray(players) && players.length > 0) {
+                    this.players = players;
+                    // Update used numbers
+                    this.usedNumbers.clear();
+                    this.players.forEach(player => this.usedNumbers.add(player.draftNumber));
+                    
+                    // Save to localStorage as well
+                    this.savePlayersToJSON();
+                    console.log('Loaded players from URL:', this.players.length);
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading players from URL:', error);
+        }
+        return false;
     }
 
     loadPlayersFromJSON() {
@@ -47,6 +75,81 @@ class FantasyDraftApp {
             console.error('Error saving players to JSON:', error);
             this.showError('Failed to save player data');
         }
+    }
+
+    generateShareableURL() {
+        try {
+            const playersData = JSON.stringify(this.players);
+            const encodedData = btoa(playersData); // Base64 encode
+            const baseURL = window.location.origin + window.location.pathname;
+            const shareableURL = `${baseURL}?players=${encodedData}`;
+            
+            return shareableURL;
+        } catch (error) {
+            console.error('Error generating shareable URL:', error);
+            return null;
+        }
+    }
+
+    async copyShareableURL() {
+        const shareableURL = this.generateShareableURL();
+        
+        if (!shareableURL) {
+            this.showError('Failed to generate shareable URL');
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(shareableURL);
+            this.showSuccess('Shareable URL copied to clipboard!');
+        } catch (error) {
+            // Fallback for browsers that don't support clipboard API
+            this.showShareableURL(shareableURL);
+        }
+    }
+
+    showShareableURL(url) {
+        const shareModal = `
+            <div class="alert alert-info mt-3">
+                <h6>Share this URL:</h6>
+                <input type="text" class="form-control" value="${url}" readonly onclick="this.select()">
+                <small class="text-muted">Copy this URL and share it with others to sync the draft data!</small>
+            </div>
+        `;
+        
+        // Add to the page temporarily
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = shareModal;
+        document.body.appendChild(tempDiv);
+        
+        // Remove after 10 seconds
+        setTimeout(() => {
+            document.body.removeChild(tempDiv);
+        }, 10000);
+    }
+
+    showSuccess(message) {
+        const successElement = document.getElementById('successDisplay') || this.createSuccessElement();
+        const successMessage = successElement.querySelector('#successMessage');
+        if (successMessage) successMessage.textContent = message;
+        successElement.style.display = 'block';
+        
+        // Auto-hide success after 3 seconds
+        setTimeout(() => {
+            successElement.style.display = 'none';
+        }, 3000);
+    }
+
+    createSuccessElement() {
+        const successDiv = document.createElement('div');
+        successDiv.id = 'successDisplay';
+        successDiv.className = 'alert alert-success';
+        successDiv.style.display = 'none';
+        successDiv.innerHTML = `<strong>Success:</strong> <span id="successMessage"></span>`;
+        
+        const container = document.querySelector('.container');
+        container.insertBefore(successDiv, container.firstChild);
+        return successDiv;
     }
 
     generateRandomDraftNumber() {
@@ -131,6 +234,7 @@ class FantasyDraftApp {
     displayPlayersList(players) {
         const playersListElement = document.getElementById('playersList');
         const playerCountElement = document.getElementById('playerCount');
+        const shareButton = document.getElementById('shareButton');
         
         // Update player count
         if (playerCountElement) {
@@ -138,11 +242,20 @@ class FantasyDraftApp {
             
             // Change color based on capacity
             if (players.length >= this.maxPlayers) {
-                playerCountElement.className = 'badge bg-danger';
+                playerCountElement.className = 'badge bg-danger me-2';
             } else if (players.length >= 7) {
-                playerCountElement.className = 'badge bg-warning';
+                playerCountElement.className = 'badge bg-warning me-2';
             } else {
-                playerCountElement.className = 'badge bg-primary';
+                playerCountElement.className = 'badge bg-primary me-2';
+            }
+        }
+        
+        // Show/hide share button based on player count
+        if (shareButton) {
+            if (players.length > 0) {
+                shareButton.style.display = 'inline-block';
+            } else {
+                shareButton.style.display = 'none';
             }
         }
         
@@ -251,6 +364,12 @@ class FantasyDraftApp {
         const newPlayerButton = document.getElementById('newPlayer');
         if (newPlayerButton) {
             newPlayerButton.addEventListener('click', () => this.showInputForm());
+        }
+
+        // Share button
+        const shareButton = document.getElementById('shareButton');
+        if (shareButton) {
+            shareButton.addEventListener('click', () => this.copyShareableURL());
         }
 
         // Enter key support for name input
