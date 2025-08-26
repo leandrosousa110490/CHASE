@@ -1,0 +1,21 @@
+{
+  "name": "fantasy-football-draft",
+  "version": "1.0.0",
+  "description": "A static fantasy football draft number generator with DuckDB",
+  "main": "main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "serve": "python -m http.server 8000"
+  },
+  "dependencies": {
+    "@duckdb/duckdb-wasm": "^1.28.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "keywords": ["fantasy", "football", "draft", "duckdb", "typescript"],
+  "author": "",
+  "license": "MIT"
+}

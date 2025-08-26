@@ -3,321 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Celebration Counter</title>
+    <title>Fantasy Football Draft Number Generator</title>
     
-    <!-- App Icon/Favicon -->
-    <link rel="icon" type="image/png" href="app.png">
-    <link rel="shortcut icon" type="image/png" href="app.png">
-    <link rel="apple-touch-icon" href="app.png">
-    <meta name="msapplication-TileImage" content="app.png">
-    
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            font-family: 'Arial', sans-serif;
-            overflow-x: hidden;
-        }
-
-        .celebration-container {
-            position: relative;
-            z-index: 10;
-        }
-
-        .counter-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            animation: float 6s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .counter-title {
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
-            background-size: 400% 400%;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: gradientShift 3s ease infinite;
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .time-unit {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transform: perspective(1000px) rotateX(5deg);
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .time-unit:hover {
-            transform: perspective(1000px) rotateX(0deg) translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .time-unit::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .time-unit:hover::before {
-            left: 100%;
-        }
-
-        .time-number {
-            font-size: 3rem;
-            font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .time-label {
-            font-size: 1.1rem;
-            opacity: 0.9;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-
-
-        .celebration-icon {
-            font-size: 4rem;
-            color: #ffd93d;
-            animation: bounce 2s ease-in-out infinite;
-            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Mobile responsiveness for trophy icon */
-        @media (max-width: 768px) {
-            .celebration-icon {
-                font-size: 3rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .celebration-icon {
-                font-size: 2.5rem;
-            }
-        }
-
-        @media (max-width: 320px) {
-            .celebration-icon {
-                font-size: 2rem;
-            }
-        }
-
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-            40% { transform: translateY(-20px); }
-            60% { transform: translateY(-10px); }
-        }
-
-        .chase-image {
-            max-width: 200px;
-            height: auto;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            transition: transform 0.3s ease;
-        }
-
-        .chase-image:hover {
-            transform: scale(1.05);
-        }
-
-        /* Speech bubble styles */
-        .speech-bubble {
-            position: absolute;
-            /* Position controls - adjust these values to move the bubble */
-            top: -70px;     /* Distance from top of image (negative = above image) */
-            left: 45px;     /* Distance from left edge of image */
-            /* Alternative positioning options:
-               right: 60px;  - Distance from right edge of image
-               bottom: -70px; - Distance from bottom of image (negative = below image) */
-            
-            background: white;
-            border: 3px solid #333;
-            border-radius: 20px;
-            padding: 10px 15px;
-            font-weight: bold;
-            font-size: 1.2rem;
-            color: #333;
-            opacity: 0;
-            transform: scale(0);
-            transition: all 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .speech-bubble::before {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 30px;
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 15px solid #333;
-        }
-
-        .speech-bubble::after {
-            content: '';
-            position: absolute;
-            bottom: -12px;
-            left: 32px;
-            width: 0;
-            height: 0;
-            border-left: 13px solid transparent;
-            border-right: 13px solid transparent;
-            border-top: 13px solid white;
-        }
-
-        .speech-bubble.show {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .chase-image-container {
-            position: relative;
-            display: inline-block;
-        }
-
-        /* Mobile responsiveness for chase image */
-        @media (max-width: 768px) {
-            .chase-image {
-                max-width: 150px;
-                margin: 0 auto;
-                display: block;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .chase-image {
-                max-width: 120px;
-            }
-        }
-
-        @media (max-width: 320px) {
-            .chase-image {
-                max-width: 100px;
-            }
-        }
-
-        .subtitle {
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 1.3rem;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            animation: fadeInUp 1s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .sparkle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            background: white;
-            border-radius: 50%;
-            animation: sparkle 1.5s ease-in-out infinite;
-        }
-
-        @keyframes sparkle {
-            0%, 100% { opacity: 0; transform: scale(0); }
-            50% { opacity: 1; transform: scale(1); }
-        }
-    </style>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container-fluid celebration-container min-vh-100 d-flex align-items-center justify-content-center py-4">
-        <div class="text-center w-100">
-            <div class="mb-4 pt-3 pt-md-0">
-                <i class="fas fa-trophy celebration-icon"></i>
-            </div>
-            
-            <h1 class="counter-title display-2 mb-2">🎉 CHASE IS ON THE CASE 🎉</h1>
-            <div class="mb-5 chase-image-container">
-                <img src="chase.png" alt="Chase" class="chase-image" id="chaseImage" style="cursor: pointer;" title="Click me to see Chase bark!">
-                <div class="speech-bubble" id="speechBubble">BARK BARK BARK!</div>
-            </div>
-            
-            <!-- Audio element for dog bark sound -->
-            <audio id="dogBarkSound" preload="auto">
-                <source src="dog-bark.mp3" type="audio/mpeg">
-                Your browser does not support the audio element.
-            </audio>
-            
-            <div class="counter-card p-5 mx-auto" style="max-width: 900px;">
-                <div class="row g-3">
-                    <div class="col-6 col-md-3">
-                        <div class="time-unit text-center">
-                            <div class="time-number" id="years">0</div>
-                            <div class="time-label">Years</div>
-                        </div>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h1 class="mb-0">🏈 Fantasy Football Draft</h1>
+                        <p class="mb-0">Get Your Random Draft Number! (Max 10 Players)</p>
                     </div>
-                    <div class="col-6 col-md-3">
-                        <div class="time-unit text-center">
-                            <div class="time-number" id="days">0</div>
-                            <div class="time-label">Days</div>
+                    <div class="card-body">
+                        <!-- Input Form -->
+                        <div id="inputForm">
+                            <div class="mb-4">
+                                <label for="playerName" class="form-label">Enter Your Name:</label>
+                                <input type="text" class="form-control form-control-lg" id="playerName" 
+                                       placeholder="Your name here..." required>
+                            </div>
+                            <div class="text-center">
+                                <button type="button" class="btn btn-success btn-lg" id="getDraftNumber">
+                                    🎲 Give Me My Draft Number!
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="time-unit text-center">
-                            <div class="time-number" id="hours">0</div>
-                            <div class="time-label">Hours</div>
+
+                        <!-- Result Display -->
+                        <div id="resultDisplay" class="text-center" style="display: none;">
+                            <div class="alert alert-success">
+                                <h3 id="playerNameDisplay"></h3>
+                                <div class="draft-number-container">
+                                    <div class="draft-number" id="draftNumber">?</div>
+                                </div>
+                                <p class="mt-3">Your fantasy football draft position!</p>
+                                <button type="button" class="btn btn-primary" id="newPlayer">
+                                    Add Another Player
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-6 col-md-3">
-                        <div class="time-unit text-center">
-                            <div class="time-number" id="minutes">0</div>
-                            <div class="time-label">Minutes</div>
+
+                        <!-- Loading -->
+                        <div id="loading" class="text-center" style="display: none;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Assigning your draft number...</p>
+                        </div>
+
+                        <!-- Error Display -->
+                        <div id="errorDisplay" class="alert alert-danger" style="display: none;">
+                            <strong>Error:</strong> <span id="errorMessage"></span>
                         </div>
                     </div>
                 </div>
-                
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <div class="time-unit text-center">
-                            <div class="time-number" id="seconds" style="font-size: 2.5rem;">0</div>
-                            <div class="time-label">Seconds</div>
+
+                <!-- Players List -->
+                <div class="card mt-4 shadow">
+                    <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">📋 Draft Order</h5>
+                        <span id="playerCount" class="badge bg-primary">0/10 Players</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="playersList">
+                            <p class="text-muted">No players assigned yet...</p>
                         </div>
                     </div>
                 </div>
@@ -325,146 +79,9 @@
         </div>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Set the start date to exactly 1 year and 5 days ago from current time
-        const now = new Date();
-        const startDate = new Date(now.getTime());
-        startDate.setFullYear(startDate.getFullYear() - 1);
-        startDate.setDate(startDate.getDate() - 5);
-        // Reset to start of that day to avoid weird hour calculations
-        startDate.setHours(0, 0, 0, 0);
-
-        function createConfetti() {
-            const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffd93d', '#ff8a80'];
-            
-            for (let i = 0; i < 100; i++) {
-                setTimeout(() => {
-                    const confetti = document.createElement('div');
-                    confetti.style.position = 'fixed';
-                    confetti.style.left = Math.random() * 100 + 'vw';
-                    confetti.style.top = '-20px';
-                    confetti.style.width = (Math.random() * 10 + 5) + 'px';
-                    confetti.style.height = (Math.random() * 10 + 5) + 'px';
-                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-                    confetti.style.zIndex = '1000';
-                    confetti.style.pointerEvents = 'none';
-                    confetti.style.borderRadius = '50%';
-                    
-                    // Create falling animation
-                    const duration = Math.random() * 3 + 2; // 2-5 seconds
-                    const rotation = Math.random() * 360;
-                    
-                    confetti.animate([
-                        {
-                            transform: `translateY(-20px) rotate(0deg)`,
-                            opacity: 1
-                        },
-                        {
-                            transform: `translateY(${window.innerHeight + 20}px) rotate(${rotation}deg)`,
-                            opacity: 0.3
-                        }
-                    ], {
-                        duration: duration * 1000,
-                        easing: 'linear'
-                    });
-                    
-                    document.body.appendChild(confetti);
-                    
-                    // Remove after animation
-                    setTimeout(() => {
-                        if (confetti.parentNode) {
-                            confetti.remove();
-                        }
-                    }, duration * 1000 + 100);
-                }, i * 20);
-            }
-        }
-
-        function updateCounter() {
-            const now = new Date();
-            const timeDiff = now - startDate;
-            
-            const years = Math.floor(timeDiff / (1000 * 60 * 60 * 24 * 365));
-            const days = Math.floor((timeDiff % (1000 * 60 * 60 * 24 * 365)) / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((timeDiff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((timeDiff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((timeDiff % (1000 * 60)) / 1000);
-            
-            document.getElementById('years').textContent = years;
-            document.getElementById('days').textContent = days;
-            document.getElementById('hours').textContent = hours;
-            document.getElementById('minutes').textContent = minutes;
-            document.getElementById('seconds').textContent = seconds;
-        }
-
-        function addSparkles() {
-            const sparkleCount = 20;
-            for (let i = 0; i < sparkleCount; i++) {
-                setTimeout(() => {
-                    const sparkle = document.createElement('div');
-                    sparkle.className = 'sparkle';
-                    sparkle.style.left = Math.random() * 100 + 'vw';
-                    sparkle.style.top = Math.random() * 100 + 'vh';
-                    sparkle.style.animationDelay = Math.random() * 2 + 's';
-                    document.body.appendChild(sparkle);
-                    
-                    setTimeout(() => {
-                        sparkle.remove();
-                    }, 3000);
-                }, i * 150);
-            }
-        }
-
-        // Initialize
-        updateCounter();
-        createConfetti();
-        addSparkles();
-        
-        // Update counter every second
-        setInterval(updateCounter, 1000);
-        
-        // Add periodic sparkles
-        setInterval(addSparkles, 10000);
-
-        // Add some interactive effects
-        document.querySelectorAll('.time-unit').forEach(unit => {
-            unit.addEventListener('click', () => {
-                unit.style.transform = 'perspective(1000px) rotateX(0deg) translateY(-10px) scale(1.05)';
-                setTimeout(() => {
-                    unit.style.transform = 'perspective(1000px) rotateX(5deg)';
-                }, 200);
-            });
-        });
-        
-        // Add click event to Chase image for dog bark sound
-        document.getElementById('chaseImage').addEventListener('click', function() {
-            const dogBarkSound = document.getElementById('dogBarkSound');
-            const speechBubble = document.getElementById('speechBubble');
-            
-            // Reset the audio to the beginning in case it's already playing
-            dogBarkSound.currentTime = 0;
-            
-            // Play the dog bark sound
-            dogBarkSound.play().catch(function(error) {
-                console.log('Audio play failed:', error);
-                // If audio fails, still show the speech bubble
-            });
-            
-            // Show speech bubble
-            speechBubble.classList.add('show');
-            
-            // Add a visual feedback effect
-            this.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                this.style.transform = 'scale(1.05)';
-            }, 150);
-            
-            // Hide speech bubble after 2 seconds
-            setTimeout(() => {
-                speechBubble.classList.remove('show');
-            }, 2000);
-        });
-    </script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Main Application -->
+    <script src="app.js"></script>
 </body>
 </html>
